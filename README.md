@@ -1,37 +1,276 @@
 # QRNG Service
 
-## About the Project
+A Quantum Random Number Generator (QRNG) REST API built with **FastAPI** and **Qiskit**.
 
-This project is a **Quantum Random Number Generator (QRNG)** built using **FastAPI** and **Qiskit**. It generates random bits by simulating a quantum circuit with a Hadamard gate and measurement, then exposes the functionality through a REST API.
-
-> **Note:** This project uses Qiskit's **AerSimulator**, which simulates a quantum computer. It does not use real quantum hardware.
+The service generates random bits by simulating a single qubit using Qiskit's `AerSimulator`. Although the randomness comes from a quantum simulation rather than physical quantum hardware, the circuit and probability distribution faithfully represent a real quantum system.
 
 ---
 
 ## Live Demo
 
-**Live API:**
-
-**GitHub Repository:** https://github.com/Charanjetty/QRNGService
+- **API:** https://qrngservice.onrender.com
+- **Swagger Documentation:** https://qrngservice.onrender.com/docs
+- **ReDoc Documentation:** https://qrngservice.onrender.com/redoc
+- **GitHub Repository:** https://github.com/Charanjetty/QRNGService
 
 ---
 
 ## Features
 
-* Generate quantum random bits through a REST API
-* Health check endpoint
-* Chi-square statistical self-test
-* API key authentication
-* Input validation with FastAPI and Pydantic
-* Clear error responses
-* Unit tests using pytest
+- Generate quantum random bits using Qiskit
+- REST API built with FastAPI
+- API key authentication
+- Automatic Swagger and ReDoc documentation
+- Health check endpoint
+- Randomness self-test using the Chi-Square test
+- Docker support
+- Unit tests with Pytest
+- Deployable on Render
 
 ---
 
-## Project Structure
+## Technology Stack
 
-```text
-qrng-service/
+- Python
+- FastAPI
+- Qiskit
+- Qiskit Aer
+- Pydantic
+- NumPy
+- SciPy
+- Pytest
+- Docker
+
+---
+
+# Authentication
+
+The QRNG endpoint requires an API key.
+
+Use the following request header:
+
+```http
+X-API-Key: dev-key-for-local-testing
+```
+
+The API key is already configured on the deployed Render application for assignment evaluation.
+
+---
+
+# Running Locally
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Charanjetty/QRNGService.git
+
+cd QRNGService
+```
+
+Create a virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+Activate it.
+
+Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+Linux / macOS
+
+```bash
+source .venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Set the API key:
+
+Windows PowerShell
+
+```powershell
+$env:QRNG_API_KEY="dev-key-for-local-testing"
+```
+
+Linux/macOS
+
+```bash
+export QRNG_API_KEY=dev-key-for-local-testing
+```
+
+Run the application:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+The API will be available at
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
+# Docker
+
+Build:
+
+```bash
+docker build -t qrng-api .
+```
+
+Run:
+
+```bash
+docker run -p 8000:8000 -e QRNG_API_KEY=dev-key-for-local-testing qrng-api
+```
+
+---
+
+# API Endpoints
+
+## Home
+
+```
+GET /
+```
+
+Returns general information about the API.
+
+---
+
+## Health Check
+
+```
+GET /health
+```
+
+No authentication required.
+
+Example response:
+
+```json
+{
+    "status": "ok"
+}
+```
+
+---
+
+## Generate Random Bits
+
+```
+POST /v1/qrng
+```
+
+Authentication Required
+
+Header
+
+```
+X-API-Key: dev-key-for-local-testing
+```
+
+Request
+
+```json
+{
+    "bits": 256
+}
+```
+
+Successful Response
+
+```json
+{
+    "bits": "101001101001011001011001...",
+    "count": 256
+}
+```
+
+---
+
+## Randomness Self-Test
+
+```
+GET /v1/qrng/self-test?n=256
+```
+
+Example response
+
+```json
+{
+    "n": 256,
+    "zeros": 129,
+    "ones": 127,
+    "chi_square": 0.015625,
+    "p_value": 0.900524,
+    "passed": true
+}
+```
+
+---
+
+# Using Swagger UI
+
+Open
+
+```
+https://qrngservice.onrender.com/docs
+```
+
+1. Click **POST /v1/qrng**
+2. Click **Try it out**
+3. Enter the header:
+
+```
+X-API-Key
+```
+
+Value:
+
+```
+dev-key-for-local-testing
+```
+
+4. Enter a request body:
+
+```json
+{
+  "bits": 128
+}
+```
+
+5. Click **Execute**
+
+The API returns a random binary string.
+
+---
+
+# Testing
+
+Run
+
+```bash
+pytest -v
+```
+
+---
+
+# Project Structure
+
+```
+QRNGService/
 │
 ├── app/
 │   ├── __init__.py
@@ -44,180 +283,20 @@ qrng-service/
 │
 ├── requirements.txt
 ├── Dockerfile
+├── runtime.txt
 ├── README.md
-├── .gitignore
-└── .dockerignore
+└── .gitignore
 ```
 
 ---
 
-## Installation
+# Notes
 
-Clone the repository:
-
-```bash
-git clone https://github.com/Charanjetty/QRNGService.git
-cd QRNGService
-```
-
-Create a virtual environment:
-
-```bash
-python -m venv venv
-```
-
-Activate it:
-
-### Windows
-
-```bash
-venv\Scripts\activate
-```
-
-Install the required packages:
-
-```bash
-pip install -r requirements.txt
-```
+- Randomness is produced using a simulated quantum circuit with Qiskit Aer.
+- The free Render instance may take 30–60 seconds to respond after a period of inactivity due to cold starts.
 
 ---
 
-## Running the Application
-
-Set the API key.
-
-### Windows PowerShell
-
-```powershell
-$env:QRNG_API_KEY="dev-key-for-local-testing"
-```
-
-Start the server:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Open:
-
-```text
-http://127.0.0.1:8000
-```
-
-Swagger documentation:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
----
-
-## API Endpoints
-
-### Generate Random Bits
-
-**POST** `/v1/qrng`
-
-Request:
-
-```json
-{
-  "bits": 256
-}
-```
-
-Response:
-
-```json
-{
-  "bits": "1101001010111100...",
-  "count": 256
-}
-```
-
----
-
-### Health Check
-
-**GET** `/health`
-
-Response:
-
-```json
-{
-  "status": "ok"
-}
-```
-
----
-
-### Self-Test
-
-**GET** `/v1/qrng/self-test?n=5000`
-
-Example response:
-
-```json
-{
-  "n": 5000,
-  "zeros": 2498,
-  "ones": 2502,
-  "chi_square": 0.0032,
-  "p_value": 0.954889
-}
-```
-
----
-
-## Example Request
-
-### cURL
-
-```bash
-curl -X POST http://127.0.0.1:8000/v1/qrng \
--H "Content-Type: application/json" \
--H "X-API-Key: dev-key-for-local-testing" \
--d "{\"bits\":256}"
-```
-
-### Python
-
-```python
-import requests
-
-response = requests.post(
-    "http://127.0.0.1:8000/v1/qrng",
-    json={"bits": 256},
-    headers={"X-API-Key": "dev-key-for-local-testing"},
-)
-
-print(response.json())
-```
-
----
-
-## Running Tests
-
-```bash
-pytest
-```
-
----
-
-## My Approach
-
-I started by implementing the function that generates random bits using a quantum circuit in Qiskit. Once that was working, I created a FastAPI endpoint so users could request random bits through a REST API.
-
-Adding request validation and API key authentication was straightforward because FastAPI provides these features out of the box.
-
-The biggest challenge was debugging the statistical self-test. At first, the endpoint returned an internal server error. I used the error messages and tested different inputs to find the issue in the chi-square calculation. After fixing it, the endpoint returned the expected statistics.
-
-Another challenge was deployment. I also ran into storage limitations on my local machine while trying to use Docker. I solved this by preparing the application for deployment on a cloud platform.
-
-This project helped me understand how to combine quantum computing concepts with web development, testing, and API deployment.
-
----
-
-## License
+# License
 
 MIT
